@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Glassy is a free online tool to convert your standard SVG icons into stunning Liquid Glass style SVGs and PNGs instantly. Apply modern glassmorphism effects to your vector graphics.">
+    <link rel="canonical" href="https://glassy.inled.es/">
+    <meta name="icon" href="favicon.ico">
+    <!-- Open Graph / Social Sharing Meta Tags -->
+    <meta property="og:title" content="Glassy | Free Liquid Glass SVG Converter">
+    <meta property="og:description" content="Convert your SVG icons into stunning Liquid Glass style SVGs and PNGs instantly.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://glassy.inled.es">
+    <!-- <meta property="og:image" content="[URL to a preview image, e.g., /preview.png]"> -->
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Glassy | Free Liquid Glass SVG Converter">
+    <meta name="twitter:description" content="Convert your SVG icons into stunning Liquid Glass style SVGs and PNGs instantly.">
+    <!-- <meta name="twitter:image" content="[URL to a preview image, e.g., /preview.png]"> -->
+    <title>Glassy: Free Online Liquid Glass SVG Icon Converter</title>
+    <!-- Carga de Tailwind CSS para utilidades rápidas de layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ANIMACIÓN DE FONDO (Provided by user) */
+        @keyframes moveBackground {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 0 100%;
+            }
+        }
+        
+        /* --- ESTILOS GLOBALES LIQUID GLASS (ESQUEMA CLARO) --- */
+        body {
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            /* Fondo actualizado para imagen única con scroll infinito */
+            background-image: url("wallpaper.svg");
+            background-repeat: repeat-y;
+            background-size: 100% auto; /* Asegura que la imagen cubra el ancho y mantenga proporción */
+            background-position: center top;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333; /* Texto oscuro por defecto */
+            line-height: 1.6;
+            
+            animation: moveBackground 60s linear infinite;
+        }
+
+        /* LIQUID GLASS STYLES (Aplicado al contenedor principal) */
+        .liquidGlass-wrapper {
+            position: relative;
+            display: flex;
+            font-weight: 600;
+            overflow: hidden;
+            
+            /* Ajuste de color y cursor según el request */
+            color: #1f2937; 
+            cursor: default; /* Cambiado a default para el wrapper */
+
+            /* Layout adjustments for the main app container */
+            width: 100%;
+            max-width: 1200px;
+            
+            box-shadow: 0 6px 6px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+            
+            z-index: 4; 
+        }
+        
+        .liquidGlass-effect {
+            position: absolute;
+            z-index: 0;
+            inset: 0;
+            
+            /* El núcleo del efecto: Blur ajustado a 3px */
+            backdrop-filter: blur(3px); 
+            -webkit-backdrop-filter: blur(3px);
+            filter: url(#glass-distortion); /* Usa el filtro SVG de distorsión */
+            overflow: hidden;
+            isolation: isolate;
+            border-radius: 20px;
+        }
+        
+        .liquidGlass-tint {
+            z-index: 1;
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.25); 
+            border-radius: 20px;
+        }
+        
+        .liquidGlass-shine {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+
+            overflow: hidden;
+
+            box-shadow: inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
+                inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+        }
+
+        /* Contenedor del contenido para asegurar que el texto se muestre sobre las capas de vidrio */
+        .app-content {
+            z-index: 3;
+            width: 100%;
+            position: relative; 
+            padding: 30px; 
+        }
+
+        /* --- EFECTO DE TEXTO LIQUID GLASS para mejor legibilidad y estética --- */
+        header h1, header p, .app-content h2, .upload-content p, .size-selector label, .preview-item h3, footer p {
+            /* Sombra clara para simular relieve y asegurar contraste sobre fondos de vidrio */
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8), -1px -1px 2px rgba(255, 255, 255, 0.8);
+            color: #1f2937;
+        }
+
+        /* AJUSTES DE COMPONENTES DE VIDRIO */
+        
+        /* Área de Carga - Panel de Vidrio Flotante */
+        .upload-area {
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            border-radius: 20px; 
+            padding: 40px;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.4); 
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5), 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-area:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.6);
+            transform: translateY(-2px);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8), 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .upload-area.active {
+            border-color: #059669; 
+            background-color: rgba(5, 150, 105, 0.1);
+            transform: none;
+        }
+
+        /* Cajas de Previsualización - Contenedores de Vidrio */
+        .preview-box {
+            background-color: rgba(255, 255, 255, 0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            border-radius: 16px; 
+            box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.5), 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .preview-box svg {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto; 
+            height: auto; 
+            object-fit: contain;
+            padding: 10px; 
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)); 
+        }
+
+        /* --- BOTONES LIQUID GLASS --- */
+        .btn {
+            /* Base Liquid Glass Button */
+            background-color: rgba(255, 255, 255, 0.25); /* Tint layer */
+            color: #1f2937; /* Dark text on light glass */
+            
+            /* Efecto Blur central */
+            backdrop-filter: blur(5px); 
+            -webkit-backdrop-filter: blur(5px);
+            
+            border: 1px solid rgba(255, 255, 255, 0.6); /* Soft white border */
+            
+            padding: 1.5rem 2.5rem; 
+            border-radius: 3rem; 
+            font-weight: bold;
+            cursor: pointer;
+            
+            /* Transición y Sombra de Vidrio */
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.5); 
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.8);
+        }
+
+        .btn:hover {
+            background-color: rgba(255, 255, 255, 0.45); /* Make it slightly whiter on hover */
+            padding: 1.8rem 2.8rem; 
+            /* Efecto de levantamiento y brillo en hover */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.7);
+            transform: scale(1.02); /* Slight scale for dock effect */
+        }
+
+        .btn:disabled {
+            background-color: rgba(255, 255, 255, 0.1); /* Vidrio más opaco cuando está deshabilitado */
+            color: #888;
+            cursor: not-allowed;
+            padding: 1.5rem 2.5rem; 
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Eliminamos los overrides de color sólido para asegurar que todos los botones sean de vidrio */
+        .bg-green-600, .bg-primary-color,
+        .bg-green-600:hover, .bg-primary-color:hover { 
+            background-color: inherit !important; 
+        }
+
+
+        /* Selector de Tamaño ahora es de Vidrio */
+        .size-selector select {
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.3);
+            color: #1f2937;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        .size-selector select:focus {
+             background-color: rgba(255, 255, 255, 0.5);
+             border-color: rgba(255, 255, 255, 0.9);
+        }
+
+
+        /* Pie de página */
+        footer {
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            color: rgba(0, 0, 0, 0.6);
+            padding-top: 15px;
+            margin-top: 20px;
+        }
+
+        footer a {
+            color: #1f2937;
+        }
+
+        /* --- GOOGLE TRANSLATE WIDGET STYLES (LIQUID GLASS) --- */
+        .liquidGlass-wrapper-small {
+            /* Base Liquid Glass styles for the container */
+            background-color: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Hide Google branding and the default vertical bar */
+        #google_translate_element .goog-te-gadget-simple {
+            background-color: transparent !important;
+            border: none !important;
+        }
+        
+        /* Style the dropdown select element */
+        #google_translate_element select {
+            /* Inherit Liquid Glass select styles from .size-selector select */
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.3);
+            color: #1f2937;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.5);
+            padding: 8px 12px;
+            font-weight: 600;
+        }
+
+        /* Hide the Google Translate toolbar that appears on translation */
+        .goog-te-banner-frame.skiptranslate {
+            display: none !important;
+        }
+        body {
+            top: 0px !important; /* Fix body offset caused by the toolbar */
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .preview-container {
+                flex-direction: column;
+            }
+            .upload-area {
+                padding: 20px;
+            }
+            .download-options {
+                flex-direction: column;
+            }
+            .btn {
+                 padding: 1rem 1.5rem; /* Menos padding en móvil */
+            }
+            .btn:hover {
+                 padding: 1.2rem 1.7rem; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Translate Widget Container (Top Right) -->
+    <div id="translate-container" class="fixed top-4 right-4 z-50 p-2 rounded-xl liquidGlass-wrapper-small">
+        <div id="google_translate_element"></div>
+    </div>
+
+    <!-- Filtros SVG Ocultos: Contiene los filtros Liquid Glass para inyección y el filtro de distorsión para el contenedor principal -->
+    <svg width="0" height="0" class="absolute z-[-1]">
+        <defs id="glass-defs-template">
+            <!-- Filtro de Efecto de Vidrio para SVG inyectado -->
+            <filter id="glass-effect" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+                <feOffset dx="0" dy="-1" in="blur" result="offsetblur"/>
+                <feFlood flood-color="rgba(255,255,255,0.4)" result="glassFill"/>
+                <feComposite in="glassFill" in2="offsetblur" operator="in" result="glassShadow"/>
+                <feOffset dx="0" dy="1" in="blur" result="offsetblur2"/>
+                <feFlood flood-color="rgba(255,255,255,0.8)" result="edgeLight"/>
+                <feComposite in="edgeLight" in2="offsetblur2" operator="in" result="edgeHighlight"/>
+                <feMerge>
+                    <feMergeNode in="glassShadow"/>
+                    <feMergeNode in="edgeHighlight"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+            
+            <!-- Gradiente de Relleno para el Vidrio de los iconos -->
+            <linearGradient id="glass-fill" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgba(255,255,255,0.35)"/>
+                <stop offset="50%" style="stop-color:rgba(255,255,255,0.15)"/>
+                <stop offset="100%" style="stop-color:rgba(255,255,255,0.25)"/>
+            </linearGradient>
+
+            <!-- Filtro de Distorsión Liquid Glass para el Wrapper principal (Usado en .liquidGlass-effect) -->
+            <filter id="glass-distortion">
+                <feTurbulence type="fractalNoise" baseFrequency="0.005 0.000001" numOctaves="1" seed="1" result="f1"/>
+                <feDisplacementMap xChannelSelector="R" yChannelSelector="G" in="SourceGraphic" in2="f1" scale="2" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- Contenedor principal con efecto Liquid Glass aplicado al fondo -->
+    <div class="liquidGlass-wrapper">
+        <!-- Capas de Efecto de Vidrio -->
+        <div class="liquidGlass-effect"></div>
+        <div class="liquidGlass-tint"></div>
+        <div class="liquidGlass-shine"></div>
+
+        <!-- Contenido de la Aplicación -->
+        <div class="app-content">
+            <header class="mb-8 text-center">
+                <h1 class="text-3xl font-extrabold mb-1">Glassy: Free Online Tool to Convert SVG Icons to Liquid Glass Style</h1>
+                <p class="text-gray-600 font-normal">Upload your SVG and download it with liquid glass style applied.</p>
+            </header>
+
+            <!-- Sección de Carga -->
+            <section class="upload-section mb-10">
+                <div id="uploadArea" class="upload-area">
+                    <input type="file" id="fileInput" accept="image/svg+xml" class="hidden">
+                    <div class="upload-content flex flex-col items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="100px" viewBox="0 -960 960 960" width="100px" fill="#FFFFFF"><path d="m440-446-36 35q-11 11-27.5 11T348-412q-11-11-11-28t11-28l104-104q12-12 28-12t28 12l104 104q11 11 11.5 27.5T612-412q-11 11-27.5 11.5T556-411l-36-35v206h220q42 0 71-29t29-71q0-42-29-71t-71-29h-60v-80q0-83-58.5-141.5T480-720q-83 0-141.5 58.5T280-520h-20q-58 0-99 41t-41 99q0 58 41 99t99 41h60q17 0 28.5 11.5T360-200q0 17-11.5 28.5T320-160h-60q-91 0-155.5-63T40-377q0-78 47-139t123-78q25-92 100-149t170-57q117 0 198.5 81.5T760-520q69 8 114.5 59.5T920-340q0 75-52.5 127.5T740-160H520q-33 0-56.5-23.5T440-240v-206Zm40 6Z"/></svg>
+                        <p class="text-xl font-semibold mb-3 text-gray-800">Drag and drop your SVG here</p>
+                        <p class="text-sm text-gray-500 mb-4">o</p>
+                        <!-- Los botones ahora solo usan la clase .btn para el estilo Liquid Glass uniforme -->
+                        <button id="uploadButton" class="btn font-bold">Open file</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Previsualización y Descarga -->
+            <section id="previewSection" class="preview-section hidden">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Preview</h2>
+                <div class="preview-container flex gap-6 mb-8">
+                    <!-- Previsualización Original (Monocromático Blanco) -->
+                    <div class="preview-item flex-1">
+                        <h3 class="font-semibold mb-2 text-gray-700">Original icon</h3>
+                        <div id="previewOriginal" class="preview-box flex items-center justify-center h-48">
+                            <p class="text-lg font-bold p-4">Upload an SVG...</p>
+                        </div>
+                    </div>
+
+                    <!-- Previsualización Liquid Glass -->
+                    <div class="preview-item flex-1">
+                        <h3 class="font-semibold mb-2 text-gray-700">Liquid glass icon</h3>
+                        <div id="previewLiquidGlass" class="preview-box flex items-center justify-center h-48">
+                            <p class="text-lg font-bold p-4">Upload an SVG...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opciones de Descarga -->
+                <div class="download-options flex justify-center items-center gap-6">
+                    <button id="downloadSvgBtn" class="btn font-bold">
+                        Download liquid glass SVG
+                    </button>
+                    
+                    <div class="size-selector flex items-center gap-2">
+                        <label for="sizeSelect" class="font-semibold text-gray-700"> PNG SIZE:</label>
+                        <select id="sizeSelect" class="p-2 rounded-lg">
+                            <option value="128">128x128</option>
+                            <option value="256" selected>256x256</option>
+                            <option value="512">512x512</option>
+                        </select>
+                    </div>
+
+                    <button id="downloadPngBtn" class="btn font-bold">
+                        Download liquid glass PNG
+                    </button>
+                </div>
+            </section>
+
+            <footer class="text-center mt-10">
+                <p class="text-sm">Licensed under GNU GPLv3.0 by Inled Group.</p>
+            </footer>
+        </div>
+    </div>
+    <script>
+        // Función de inicialización de Google Translate
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'es', // Idioma original de la página
+                autoDisplay: true, // Mostrar automáticamente el widget
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                // Cargar automáticamente en el idioma del dispositivo
+                // Esto se logra omitiendo 'includedLanguages' y confiando en la detección automática
+            }, 'google_translate_element');
+        }
+        const NS = "http://www.w3.org/2000/svg"; 
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Obtener elementos DOM
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const uploadButton = document.getElementById('uploadButton');
+            const previewSection = document.getElementById('previewSection');
+            const previewOriginal = document.getElementById('previewOriginal');
+            const previewLiquidGlass = document.getElementById('previewLiquidGlass');
+            const downloadPngBtn = document.getElementById('downloadPngBtn');
+            const downloadSvgBtn = document.getElementById('downloadSvgBtn');
+            const sizeSelect = document.getElementById('sizeSelect');
+            
+            let originalSvgString = null; // SVG original con color blanco
+            let liquidGlassSvgString = null; // SVG con el efecto Liquid Glass
+            let liquidGlassSvgElement = null; // Elemento SVG DOM del efecto
+            
+            // Inicializar botones de descarga deshabilitados
+            downloadPngBtn.disabled = true;
+            downloadSvgBtn.disabled = true;
+
+            // Alerta personalizada para reemplazar window.alert
+            function customAlert(message) {
+                console.error(message);
+                const uploadContent = uploadArea.querySelector('.upload-content');
+                let alertDiv = uploadContent.querySelector('.temp-alert');
+
+                if (!alertDiv) {
+                    alertDiv = document.createElement('p');
+                    alertDiv.className = 'temp-alert text-red-600 font-bold mt-3 bg-red-100 p-2 rounded-lg'; // Color adaptado al fondo claro
+                    uploadContent.appendChild(alertDiv);
+                }
+                alertDiv.textContent = message;
+                setTimeout(() => alertDiv.textContent = '', 4000);
+            }
+
+            // Función para disparar la selección de archivo
+            uploadButton.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Procesar archivo seleccionado
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+            
+            // --- Lógica de Drag and Drop ---
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                uploadArea.classList.add('active');
+            }
+            
+            function unhighlight() {
+                uploadArea.classList.remove('active');
+            }
+            
+            uploadArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+            
+            // Manejar los archivos subidos
+            function handleFiles(files) {
+                if (files.length === 0) return;
+                
+                const file = files[0];
+                if (file.type !== 'image/svg+xml') {
+                    customAlert('¡Por favor, sube un archivo SVG!');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const svgContent = e.target.result;
+                    processAndDisplaySvg(svgContent);
+                };
+                reader.readAsText(file);
+            }
+            
+            // Procesar y mostrar el SVG
+            function processAndDisplaySvg(svgContent) {
+                // 1. Convertir a versión blanca para la previsualización 'Original'
+                originalSvgString = convertSvgToWhite(svgContent);
+                previewOriginal.innerHTML = originalSvgString;
+                
+                // 2. Aplicar efecto Liquid Glass
+                const { svgString, svgElement } = applyLiquidGlassEffect(svgContent);
+                liquidGlassSvgString = svgString;
+                liquidGlassSvgElement = svgElement; // Guardamos la referencia del DOM
+                previewLiquidGlass.innerHTML = svgString;
+                
+                // 3. Mostrar área de previsualización y habilitar descargas
+                previewSection.classList.remove('hidden');
+                downloadPngBtn.disabled = false;
+                downloadSvgBtn.disabled = false;
+                
+                // 4. Scroll a la previsualización
+                previewSection.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Convierte el SVG a una versión monocromática blanca
+            function convertSvgToWhite(svgContent) {
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
+                const svgElement = svgDoc.documentElement;
+                
+                // Asegurar viewBox
+                if (!svgElement.getAttribute('viewBox') && svgElement.getAttribute('width') && svgElement.getAttribute('height')) {
+                    svgElement.setAttribute('viewBox', `0 0 ${svgElement.getAttribute('width')} ${svgElement.getAttribute('height')}`);
+                }
+                
+                // Seleccionar todos los elementos gráficos (excepto texto)
+                const graphicElements = svgElement.querySelectorAll('path, circle, rect, ellipse, polygon, polyline, line, g:not(:has(text))');
+                
+                graphicElements.forEach(element => {
+                    // Si el elemento ya tiene fill o stroke, lo convertimos a blanco
+                    if (element.hasAttribute('fill') && element.getAttribute('fill') !== 'none') {
+                        element.setAttribute('fill', 'white');
+                    }
+                    if (element.hasAttribute('stroke') && element.getAttribute('stroke') !== 'none') {
+                        element.setAttribute('stroke', 'white');
+                    }
+                    
+                    // Si no tiene fill ni stroke, le damos un stroke blanco
+                    if ((!element.hasAttribute('fill') || element.getAttribute('fill') === 'none') && 
+                        (!element.hasAttribute('stroke') || element.getAttribute('stroke') === 'none')) {
+                        element.setAttribute('stroke', 'white');
+                        if (!element.hasAttribute('stroke-width')) {
+                            element.setAttribute('stroke-width', '1');
+                        }
+                    }
+                    
+                    // Limpiar estilos inline si es necesario, forzando blanco
+                    if (element.hasAttribute('style')) {
+                        const style = element.getAttribute('style');
+                        element.setAttribute('style', 
+                            style.replace(/fill:[^;]*/g, 'fill:white')
+                                 .replace(/stroke:[^;]*/g, 'stroke:white')
+                        );
+                    }
+                });
+                
+                // El serializador es necesario para obtener el string final
+                const serializer = new XMLSerializer();
+                return serializer.serializeToString(svgElement);
+            }
+            
+            // Aplica el efecto Liquid Glass (Filtro SVG + Gradiente de Relleno)
+            function applyLiquidGlassEffect(svgContent) {
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
+                const svgElement = svgDoc.documentElement;
+                
+                // Asegurar viewBox
+                if (!svgElement.getAttribute('viewBox') && svgElement.getAttribute('width') && svgElement.getAttribute('height')) {
+                    svgElement.setAttribute('viewBox', `0 0 ${svgElement.getAttribute('width')} ${svgElement.getAttribute('height')}`);
+                }
+                
+                // 1. Obtener las definiciones (defs) del template
+                const glassDefsTemplate = document.getElementById('glass-defs-template');
+                const defsClone = glassDefsTemplate.cloneNode(true);
+                
+                // 2. Inyectar solo los filtros de icono al SVG cargado
+                let existingDefs = svgElement.querySelector('defs');
+                if (!existingDefs) {
+                    existingDefs = document.createElementNS(NS, "defs");
+                    svgElement.prepend(existingDefs);
+                }
+                
+                // Seleccionar solo los elementos de filtro de ICONO del template (excluyendo el glass-distortion global)
+                const iconFilterAndGradient = Array.from(defsClone.children).filter(child => 
+                    child.id === 'glass-effect' || child.id === 'glass-fill'
+                );
+                
+                iconFilterAndGradient.forEach(node => existingDefs.appendChild(node.cloneNode(true)));
+                
+                // 3. Modificar todas las formas
+                const paths = svgElement.querySelectorAll('path, circle, rect, ellipse, polygon, polyline, line');
+                paths.forEach(path => {
+                    path.setAttribute('class', 'glass-element');
+                    path.setAttribute('fill', 'url(#glass-fill)');
+                    path.setAttribute('filter', 'url(#glass-effect)');
+                    path.setAttribute('stroke', 'none'); // Remover borde para confiar en el filtro
+                });
+                
+                // 4. Modificar elementos de texto
+                const textElements = svgElement.querySelectorAll('text');
+                textElements.forEach(text => {
+                    text.setAttribute('fill', 'rgba(0, 0, 0, 0.9)'); // Color oscuro para legibilidad
+                    text.setAttribute('stroke', 'none');
+                });
+
+                // 5. Serializar el SVG final
+                const serializer = new XMLSerializer();
+                return { svgString: serializer.serializeToString(svgElement), svgElement: svgElement };
+            }
+
+            // --- Descarga SVG Procesado (Mantiene la función para descargar el SVG estilizado) ---
+            downloadSvgBtn.addEventListener('click', downloadSvg);
+
+            function downloadSvg() {
+                if (!liquidGlassSvgString) {
+                    customAlert('¡Primero carga y procesa un SVG!');
+                    return;
+                }
+                
+                let source = liquidGlassSvgString;
+                
+                // Añadir encabezado XML estándar
+                if (!source.match(/^<\?xml/)) {
+                    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+                }
+
+                const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'icon-liquid-glass.svg';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+            
+            // --- Descarga PNG ---
+            downloadPngBtn.addEventListener('click', downloadPng);
+            
+            function downloadPng() {
+                if (!liquidGlassSvgString) {
+                    customAlert('¡Primero carga y procesa un SVG!');
+                    return;
+                }
+
+                const size = parseInt(sizeSelect.value);
+                
+                // 1. Crear un contenedor temporal para renderizar el SVG
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'absolute';
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.top = '-9999px';
+                tempContainer.innerHTML = liquidGlassSvgString;
+                document.body.appendChild(tempContainer);
+                
+                const svgElement = tempContainer.querySelector('svg');
+                if (!svgElement) {
+                    customAlert('No se pudo procesar el SVG para la descarga PNG.');
+                    document.body.removeChild(tempContainer);
+                    return;
+                }
+                
+                // 2. Configurar tamaño y ViewBox para el renderizado
+                svgElement.setAttribute('width', size);
+                svgElement.setAttribute('height', size);
+                
+                // 3. Crear Canvas
+                const canvas = document.createElement('canvas');
+                const scaleFactor = window.devicePixelRatio || 1;
+                canvas.width = size * scaleFactor;
+                canvas.height = size * scaleFactor;
+                const ctx = canvas.getContext('2d');
+                ctx.scale(scaleFactor, scaleFactor);
+                
+                // 4. Crear imagen a partir del SVG
+                const svgBlob = new Blob([svgElement.outerHTML], {type: 'image/svg+xml;charset=utf-8'});
+                const svgUrl = URL.createObjectURL(svgBlob);
+                
+                const img = new Image();
+                img.onload = function() {
+                    ctx.clearRect(0, 0, size, size);
+                    ctx.drawImage(img, 0, 0, size, size);
+                    
+                    // 5. Convertir a PNG y descargar
+                    const pngUrl = canvas.toDataURL('image/png');
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = pngUrl;
+                    downloadLink.download = `liquid-glass-icon-${size}x${size}.png`;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    
+                    // 6. Limpieza
+                    URL.revokeObjectURL(svgUrl);
+                    document.body.removeChild(tempContainer);
+                };
+                
+                img.onerror = function(err) {
+                    customAlert('Error al dibujar SVG en Canvas. Intenta con un SVG más simple.');
+                    document.body.removeChild(tempContainer);
+                    URL.revokeObjectURL(svgUrl);
+                };
+                
+                img.src = svgUrl;
+            }
+        });
+    </script>
+
+</body>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</html>
